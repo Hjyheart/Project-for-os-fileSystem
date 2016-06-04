@@ -19,11 +19,8 @@ public class UI extends JFrame {
     private JTextField searchLine = new JTextField();
     private tableModel model = new tableModel();
     private JTable fileTable;
-    private JPanel buttons = new JPanel(new FlowLayout(FlowLayout.CENTER));
-    private JButton addChild = new JButton("add");
-    private JButton deleteChild = new JButton("delete");
-
     private JPopupMenu myMenu = new JPopupMenu();
+
     public UI(){
         setLayout(new BorderLayout());
 
@@ -56,12 +53,17 @@ public class UI extends JFrame {
             public void valueChanged(TreeSelectionEvent e) {
                 DefaultMutableTreeNode parent = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
                 model.removeRows(0, model.getRowCount());
-                if (parent.getChildCount() > 0){
+                if (parent!= null){
                     File rootFile = new File(((myFiles)parent.getUserObject()).getFilePath());
-                    File [] childFiles = rootFile.listFiles();
+                    if (parent.getChildCount() > 0) {
+                        File[] childFiles = rootFile.listFiles();
 
-                    for (File myFile : childFiles){
-                        model.addRow(myFile.getName(), myFile.getPath(), myFile.isFile(), myFile.length());
+                        for (File myFile : childFiles) {
+                            model.addRow(myFile);
+                        }
+                    }
+                    else{
+                        model.addRow(rootFile);
                     }
                     fileTable.updateUI();
                 }
@@ -92,7 +94,7 @@ public class UI extends JFrame {
                         node.add(new DefaultMutableTreeNode("temp"));
                     }
                     treeModel.insertNodeInto(node, parent,parent.getChildCount());
-                    model.addRow(myFile.getName(), myFile.getPath(), myFile.isFile(), myFile.length());
+                    model.addRow(myFile);
                 }
                 fileTable.updateUI();
             }
@@ -121,33 +123,6 @@ public class UI extends JFrame {
         treePane.setPreferredSize(new Dimension(350, 400));
         add(treePane, BorderLayout.WEST);
 
-//        // Add button init
-//        addChild.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                DefaultMutableTreeNode child = new DefaultMutableTreeNode("test");
-//                DefaultMutableTreeNode parent = null;
-//                TreePath parentPath = tree.getSelectionPath();
-//                if (parentPath == null){
-//                    parent = root;
-//                }else{
-//                    parent = (DefaultMutableTreeNode) (parentPath.getLastPathComponent());
-//                }
-//
-//            }
-//        });
-//        buttons.add(addChild);
-//
-//        // Delete button init
-//        deleteChild.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                treeModel.removeNodeFromParent((MutableTreeNode) tree.getLastSelectedPathComponent());
-//            }
-//        });
-//        buttons.add(deleteChild);
-//        add(buttons, BorderLayout.SOUTH);
-
         // Search init
         searchLine.setEditable(true);
         searchLine.setPreferredSize(new Dimension(1200, 50));
@@ -158,10 +133,10 @@ public class UI extends JFrame {
 
         // Table init
         fileTable = new JTable(model);
-        fileTable.setFont(new Font("黑体",Font.BOLD,32));
+        fileTable.setFont(new Font("黑体",Font.BOLD,20));
         fileTable.getTableHeader().setFont(new Font("黑体",Font.BOLD,32));
-        fileTable.setPreferredSize(new Dimension(1500, 1000));
-        fileTable.setRowHeight(50);
+        fileTable.setRowHeight(30);
+
         tablePane = new JScrollPane(fileTable);
         add(tablePane, BorderLayout.CENTER);
 
@@ -185,6 +160,21 @@ public class UI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String inputValue = JOptionPane.showInputDialog("Old name:" + tree.getLastSelectedPathComponent().toString());
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+                myFiles temp = (myFiles)node.getUserObject();
+                if (temp.renameFile(inputValue)){
+                    JOptionPane.showMessageDialog(null, "修改成功", "Yes!", JOptionPane.INFORMATION_MESSAGE);
+                    DefaultMutableTreeNode parent = (DefaultMutableTreeNode) node.getParent();
+                    treeModel.removeNodeFromParent(node);
+                    node = new DefaultMutableTreeNode(temp);
+                    treeModel.insertNodeInto(node, parent, parent.getChildCount());
+                    tree.scrollPathToVisible(new TreePath(node.getPath()));
+                    model.removeRows(0, model.getRowCount());
+                    model.addRow(temp.getMyFile());
+                    fileTable.updateUI();
+                }else{
+                    JOptionPane.showMessageDialog(null, "修改失败", "No!", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
         myMenu.add(createFileItem);
@@ -197,12 +187,15 @@ public class UI extends JFrame {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
                 if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1){
+                    String fileName = ((String) model.getValueAt(fileTable.getSelectedRow(), 0));
                     String filePath = ((String) model.getValueAt(fileTable.getSelectedRow(), 1));
                     try {
                         Runtime.getRuntime().exec("rundll32 url.dll FileProtocolHandler "  +  filePath);
                     } catch (IOException e1) {
                         System.out.println("fail");
                     }
+                    JOptionPane.showMessageDialog(null, "File Name: " + fileName + "\n File Path: " + filePath, "content",
+                            JOptionPane.INFORMATION_MESSAGE);
                 }
             }
         });

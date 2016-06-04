@@ -1,4 +1,6 @@
 import javax.swing.table.AbstractTableModel;
+import java.io.File;
+import java.text.DecimalFormat;
 import java.util.Vector;
 
 /**
@@ -12,13 +14,14 @@ public class tableModel extends AbstractTableModel {
         content = new Vector();
     }
 
-    public void addRow(String fileName, String filePath, boolean type, long volume){
-        Vector v = new Vector(2);
-        v.add(0, fileName);
-        v.add(1, filePath);
-        if (type){
+    public void addRow(File myFile){
+        Vector v = new Vector();
+        DecimalFormat format=new DecimalFormat("#0.00");
+        v.add(0, myFile.getName());
+        v.add(1, myFile.getPath());
+        if (myFile.isFile()){
             v.add(2, "File");
-            v.add(3, (1.0 * volume)/1024);
+            v.add(3, format.format((1.0 * myFile.length())/1024));
         }else {
             v.add(2, "Directory");
             v.add(3, "-");
@@ -26,8 +29,13 @@ public class tableModel extends AbstractTableModel {
         content.add(v);
     }
 
-    public void removeRow(int row){
-        content.remove(row);
+    public void removeRow(String name) {
+        for (int i = 0; i < content.size(); i++){
+            if (((Vector)content.get(i)).get(0).equals(name)){
+                content.remove(i);
+                break;
+            }
+        }
     }
 
     public void removeRows(int row, int count){

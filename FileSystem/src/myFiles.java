@@ -5,9 +5,11 @@ import java.io.File;
  */
 public class myFiles {
     private File myFile;
+    private String fileName;
 
     public myFiles(File myFile){
         this.myFile = myFile;
+        fileName = myFile.getName();
     }
 
     public String getFileName(){
@@ -18,18 +20,24 @@ public class myFiles {
         return myFile.toString();
     }
 
-    public void renameFile(String name){
+    public boolean renameFile(String name){
         String c = myFile.getParent();
-        File mm = new File(c + File.pathSeparator + name);
+        File mm = new File(c + File.separator + name);
         if (myFile.renameTo(mm)){
-            System.out.println("yes");
+            myFile = mm;
+            fileName = name;
+            return true;
         }else{
-            System.out.println("no");
+            return false;
         }
+    }
+
+    public File getMyFile(){
+        return myFile;
     }
 
     @Override
     public String toString(){
-        return myFile.getName();
+        return fileName;
     }
 }
