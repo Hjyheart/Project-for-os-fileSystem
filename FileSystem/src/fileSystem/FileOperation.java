@@ -1,3 +1,5 @@
+package fileSystem;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -42,23 +44,23 @@ public class FileOperation {
 
         return result;
     }
-    // delete a dir
-    public  void deleteDirectory(String filePath){
-        File file = new File(filePath);
-        if(!file.exists()){
-            return;
-        }
-
-        if(file.isFile()){
-            file.delete();
-        }else if(file.isDirectory()){
-            File[] files = file.listFiles();
-            for (File myfile : files) {
-                deleteDirectory(filePath + "/" + myfile.getName());
-            }
-            file.delete();
-        }
-    }
+//    // delete a dir
+//    public  static void deleteDirectory(String filePath){
+//        File file = new File(filePath);
+//        if(!file.exists()){
+//            return;
+//        }
+//
+//        if(file.isFile()){
+//            file.delete();
+//        }else if(file.isDirectory()){
+//            File[] files = file.listFiles();
+//            for (File myfile : files) {
+//                deleteDirectory(filePath + "/" + myfile.getName());
+//            }
+//            file.delete();
+//        }
+//    }
     // get system files
     public void getFiles(){
         File [] roots = File.listRoots();

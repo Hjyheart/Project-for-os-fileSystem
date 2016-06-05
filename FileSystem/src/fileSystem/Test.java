@@ -1,3 +1,5 @@
+package fileSystem;
+
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -16,7 +18,7 @@ public class Test {
 
     @AfterClass
     public static void createSuccess(){
-        System.out.println("Test over!");
+        System.out.println("fileSystem.Test over!");
     }
 
     @Before
@@ -51,11 +53,11 @@ public class Test {
         }
     }
 
-    @org.junit.Test
-    public void testDeleteDirectory() throws Exception{
-        testCase.deleteDirectory("/Users/hongjiayong/IdeaProjects/FileSystem/test");
-        System.out.println("pass");
-    }
+//    @org.junit.Test
+//    public void testDeleteDirectory() throws Exception{
+//        testCase.deleteDirectory("/Users/hongjiayong/IdeaProjects/FileSystem/test");
+//        System.out.println("pass");
+//    }
 
     @org.junit.Test
     public void testGetFiles() throws Exception{

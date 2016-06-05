@@ -1,3 +1,5 @@
+package fileSystem;
+
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
@@ -20,6 +22,48 @@ public class UI extends JFrame {
     private tableModel model = new tableModel();
     private JTable fileTable;
     private JPopupMenu myMenu = new JPopupMenu();
+    private boolean searchLock = false;
+    private int searchCount = 0;
+
+    // delete a dir
+    public void deleteDirectory(String filePath){
+        File file = new File(filePath);
+        if(!file.exists()){
+            return;
+        }
+        if(file.isFile()){
+            file.delete();
+        }else if(file.isDirectory()){
+            File[] files = file.listFiles();
+            for (File myfile : files) {
+                deleteDirectory(filePath + "/" + myfile.getName());
+            }
+            file.delete();
+        }
+    }
+
+    // search file
+    public String searchFile(String rootFile,String filePath){
+        File root = new File(rootFile);
+        File file = new File(filePath);
+        String path = null;
+
+        File [] files = root.listFiles();
+        try {
+            for (File myFile : files) {
+                if (myFile.getName().equals(file.getName())) {
+                    return myFile.getPath();
+                }
+                if (myFile.isDirectory()) {
+                    path = searchFile(myFile.getPath(), filePath);
+                }
+            }
+            searchCount++;
+        }catch (Exception e){
+
+        }
+        return path;
+    }
 
     public UI(){
         setLayout(new BorderLayout());
@@ -29,7 +73,7 @@ public class UI extends JFrame {
 
         final DefaultTreeModel treeModel = new DefaultTreeModel(root);
 
-        File [] roots = File.listRoots();
+        final File [] roots = File.listRoots();
         for (File myFile : roots){
             DefaultMutableTreeNode node = null;
             myFiles addFile = new myFiles(myFile);
@@ -80,7 +124,8 @@ public class UI extends JFrame {
                 }else{
                     parent = (DefaultMutableTreeNode) (parentPath.getLastPathComponent());
                 }
-                treeModel.removeNodeFromParent(parent.getFirstLeaf());
+                if ((((DefaultMutableTreeNode)parent.getChildAt(0)).toString()).equals("temp") && parent.getChildCount() != 1)
+                    treeModel.removeNodeFromParent(parent.getFirstLeaf());
 
 
                 File rootFile = new File(((myFiles)parent.getUserObject()).getFilePath());
@@ -125,10 +170,31 @@ public class UI extends JFrame {
 
         // Search init
         searchLine.setEditable(true);
-        searchLine.setPreferredSize(new Dimension(1200, 50));
+        searchLine.setPreferredSize(new Dimension(1000, 50));
         JPanel pane = new JPanel(new FlowLayout(FlowLayout.LEFT));
         pane.add(new Label("search"));
         pane.add(searchLine);
+        JButton search = new JButton("ok");
+        search.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!searchLock) {
+                    searchLock = true;
+                    String fileName = searchLine.getText();
+                    String result = null;
+//                    for (File myFile : roots) {
+                        result = searchFile("/Users/hongjiayong", fileName);
+//                        if (result != null)
+//                            break;
+//                    }
+                    searchCount = 0;
+                    System.out.println(result);
+                    searchLock = false;
+                }
+
+            }
+        });
+        pane.add(search);
         add(pane, BorderLayout.NORTH);
 
         // Table init
@@ -141,21 +207,92 @@ public class UI extends JFrame {
         add(tablePane, BorderLayout.CENTER);
 
         // Menu init
+
+        // Create a file or a dir and update fileTable to show it
         JMenuItem createFileItem = new JMenuItem("创建");
+        createFileItem.setFont(new Font("黑体",Font.BOLD,32));
         createFileItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+                myFiles temp = (myFiles)node.getUserObject();
+                if (temp.getMyFile().isDirectory()) {
+                    Object[] options = {"file", "directory"};
+                    int type = JOptionPane.showOptionDialog(null, "Choose a type:", "create",
+                            JOptionPane.DEFAULT_OPTION, JOptionPane.DEFAULT_OPTION, null,
+                            options, options[0]);
+                    System.out.println(type);
+                    // create a file
+                    if (type == 0){
+                        String inputValue = JOptionPane.showInputDialog("File name:");
+                        File newFile = new File(temp.getFilePath() + File.separator + inputValue);
+                        if (!newFile.exists() && !inputValue.equals(null)){
+                            try {
+                                newFile.createNewFile();
+                                DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(new myFiles(newFile));
+                                treeModel.insertNodeInto(newNode, node, node.getChildCount());
+                                tree.scrollPathToVisible(new TreePath(newNode.getPath()));
+                                model.removeRows(0, model.getRowCount());
+                                model.addRow(newFile);
+                                fileTable.updateUI();
+                                JOptionPane.showMessageDialog(null, "Create success!", "Success", JOptionPane.DEFAULT_OPTION);
+                            } catch (IOException e1) {
+                                JOptionPane.showMessageDialog(null, "Create fail!!!", "Error", JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
+                    }
+                    // create a dir
+                    if (type == 1){
+                        String inputValue = JOptionPane.showInputDialog("Directory name:");
+                        File newFile = new File(temp.getFilePath() + File.separator + inputValue);
+                        if (!newFile.exists()){
+                            newFile.mkdir();
+                            DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(new myFiles(newFile));
+                            newNode.add(new DefaultMutableTreeNode("temp"));
+                            treeModel.insertNodeInto(newNode, node, node.getChildCount());
+                            tree.scrollPathToVisible(new TreePath(newNode.getPath()));
+                            model.removeRows(0, model.getRowCount());
+                            model.addRow(newFile);
+                            fileTable.updateUI();
+                            JOptionPane.showMessageDialog(null, "Create success!", "Success", JOptionPane.DEFAULT_OPTION);
+                        }else{
+                            JOptionPane.showMessageDialog(null, "Create fail!!!", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                }else{
+                    JOptionPane.showMessageDialog(null, "You must choose a directory!", "Error", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
+
+        // Delete a file or a dir and update fileTable to show the difference
         JMenuItem deleteItem = new JMenuItem("删除");
+        deleteItem.setFont(new Font("黑体",Font.BOLD,32));
         deleteItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+                myFiles temp = (myFiles)node.getUserObject();
+                // delete a file
+                if (temp.getMyFile().isFile()){
+                    temp.getMyFile().delete();
+                    treeModel.removeNodeFromParent(node);
+                    model.removeRow(temp.getFileName());
+                    fileTable.updateUI();
+                }
+                // delete a dir
+                if (temp.getMyFile().isDirectory()){
+                    deleteDirectory(temp.getFilePath());
+                    treeModel.removeNodeFromParent(node);
+                    model.removeRow(temp.getFileName());
+                    fileTable.updateUI();
+                }
             }
         });
+
+        // Rename a file and update fileTable to show the difference
         JMenuItem renameItem = new JMenuItem("重命名");
+        renameItem.setFont(new Font("黑体",Font.BOLD,32));
         renameItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -180,8 +317,9 @@ public class UI extends JFrame {
         myMenu.add(createFileItem);
         myMenu.add(deleteItem);
         myMenu.add(renameItem);
+        myMenu.setPreferredSize(new Dimension(200, 200));
 
-        // Mouse DoubleClick
+        // Mouse DoubleClick to open a file
         fileTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -190,9 +328,13 @@ public class UI extends JFrame {
                     String fileName = ((String) model.getValueAt(fileTable.getSelectedRow(), 0));
                     String filePath = ((String) model.getValueAt(fileTable.getSelectedRow(), 1));
                     try {
-                        Runtime.getRuntime().exec("rundll32 url.dll FileProtocolHandler "  +  filePath);
+                        if(Desktop.isDesktopSupported()) {
+                            Desktop desktop = Desktop.getDesktop();
+                            desktop.open(new File(filePath));
+                        }
                     } catch (IOException e1) {
-                        System.out.println("fail");
+                        JOptionPane.showMessageDialog(null, "Sorry, some thing wrong!", "Fail to open",
+                                JOptionPane.ERROR_MESSAGE);
                     }
                     JOptionPane.showMessageDialog(null, "File Name: " + fileName + "\n File Path: " + filePath, "content",
                             JOptionPane.INFORMATION_MESSAGE);
