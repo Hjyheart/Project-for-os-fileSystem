@@ -48,7 +48,7 @@ public class UI extends JFrame {
     private JLabel usedField = new JLabel();
     private JLabel freeYet = new JLabel("Free:");
     private JLabel freeField = new JLabel();
-    private JLabel fileNum = new JLabel("File Number:");
+    private JLabel fileNum = new JLabel("Block's File Number:");
     private JLabel fileNumField = new JLabel();
 
     // Delete a dir
@@ -82,10 +82,16 @@ public class UI extends JFrame {
         return space;
     }
 
+    // Update block's information
+    public void upDateBlock(Block currentBlock){
+        fileNumField.setText(String.valueOf(currentBlock.getFileNum()));
+        usedField.setText(String.valueOf(currentBlock.getSpace()) + " KB");
+        freeField.setText(String.valueOf(1024 - currentBlock.getSpace()) + "KB");
+    }
+
     public UI() throws IOException {
         setTitle("File System Demo");
         setLayout(new BorderLayout());
-
 
         // JFileChooser init
         String path = File.listRoots()[0].getPath();
@@ -211,6 +217,7 @@ public class UI extends JFrame {
                     parent = (DefaultMutableTreeNode) (parentPath.getLastPathComponent());
                 }
                 int blokName = ((myFiles)parent.getUserObject()).getBlockName();
+                Block currentBlock = blocks.get(blokName - 1);
                 if (parentPath == null){
                     parent = root;
                 }else{
@@ -218,7 +225,8 @@ public class UI extends JFrame {
                 }
 
                 myFiles myFile = (myFiles)parent.getUserObject();
-                nameField.setText(myFile.getFileName());
+                nameField.setText(String.valueOf(blokName));
+                upDateBlock(currentBlock);
 
                 model.removeRows(0, model.getRowCount());
                 File rootFile = new File(((myFiles)parent.getUserObject()).getFilePath());
@@ -255,7 +263,7 @@ public class UI extends JFrame {
                 model.removeRows(0, model.getRowCount());
                 for (File myFile : childFiles){
                     DefaultMutableTreeNode node = null;
-                    node = new DefaultMutableTreeNode(new myFiles(myFile, blokName, 0));
+                    node = new DefaultMutableTreeNode(new myFiles(myFile, blokName, getSpace(myFile)));
                     if (myFile.isDirectory() && myFile.canRead()) {
                         node.add(new DefaultMutableTreeNode("temp"));
                     }
@@ -357,6 +365,7 @@ public class UI extends JFrame {
                             model.removeRows(0, model.getRowCount());
                             model.addRow(new myFiles(newFile, blokName, capacity));
                             fileTable.updateUI();
+                            upDateBlock(currentBlock);
                             JOptionPane.showMessageDialog(null, "Create success! Reopen the parent dir to reflash!", "Success", JOptionPane.DEFAULT_OPTION);
                         }
                     } catch (IOException e1) {
@@ -376,6 +385,7 @@ public class UI extends JFrame {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
                 myFiles temp = (myFiles)node.getUserObject();
                 int blokName = temp.getBlockName();
+                Block currentBlock = blocks.get(blokName - 1);
                 String inputValue = JOptionPane.showInputDialog("Dir name:");
                 if (inputValue == null) {
                     return;
@@ -390,6 +400,7 @@ public class UI extends JFrame {
                     model.removeRows(0, model.getRowCount());
                     model.addRow(new myFiles(newDir, blokName, 0));
                     fileTable.updateUI();
+                    upDateBlock(currentBlock);
                     JOptionPane.showMessageDialog(null, "Create success! Reopen the parent dir to reflash!", "Success", JOptionPane.DEFAULT_OPTION);
                 }catch (Exception E){
                     JOptionPane.showMessageDialog(null, "Create fail!!!", "Error", JOptionPane.ERROR_MESSAGE);
@@ -416,6 +427,7 @@ public class UI extends JFrame {
                         } catch (IOException e1) {
                             e1.printStackTrace();
                         }
+                        upDateBlock(currentBlock);
                         JOptionPane.showMessageDialog(null, "Delete success! Reopen the parent dir to reflash!", "Success", JOptionPane.DEFAULT_OPTION);
                     }else{
                         JOptionPane.showMessageDialog(null, "Delete fail!!!", "Error", JOptionPane.ERROR_MESSAGE);
@@ -442,6 +454,7 @@ public class UI extends JFrame {
                         for (File myfile : temp.getMyFile().listFiles()) {
                             currentBlock.deleteFile(myfile, getSpace(myfile));
                         }
+                        upDateBlock(currentBlock);
                         JOptionPane.showMessageDialog(null, "Format success! Reopen the parent dir to reflash!", "Success", JOptionPane.DEFAULT_OPTION);
                         currentBlock.rewriteBitMap();
                     }
@@ -490,10 +503,13 @@ public class UI extends JFrame {
         panel.add(tips);
         panel.add(blockName);
         panel.add(nameField);
+        panel.add(new JLabel("  "));
         panel.add(haveUsed);
         panel.add(usedField);
+        panel.add(new JLabel("  "));
         panel.add(freeYet);
         panel.add(freeField);
+        panel.add(new JLabel("  "));
         panel.add(fileNum);
         panel.add(fileNumField);
         add(panel, BorderLayout.SOUTH);

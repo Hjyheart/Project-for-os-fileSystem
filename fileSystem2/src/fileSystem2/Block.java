@@ -119,6 +119,7 @@ public class Block {
             }
             return false;
         }else{
+            fileNum++;
             space += capacity;
             filesBit.put(file.getName(), cap);
             rewriteBitMap();
@@ -152,6 +153,7 @@ public class Block {
             if (file.isFile()){
                 file.delete();
                 space -= capacity;
+                fileNum--;
                 int[][] fileStore = filesBit.get(file.getName());
                 for (int i = 0; i < 32; i++){
                     for (int k = 0; k < 32; k++){
