@@ -151,7 +151,15 @@ public class Block {
 
         try{
             if (file.isFile()){
-                file.delete();
+//                while(file.exists()) {
+//                    boolean result = file.delete();
+//                    System.out.println(result);
+//                }
+                try {
+                    file.delete();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
                 space -= capacity;
                 fileNum--;
                 int[][] fileStore = filesBit.get(file.getName());
@@ -174,10 +182,13 @@ public class Block {
                 for(File myFile : files){
                     deleteFile(myFile, capacity);
                 }
-                file.delete();
+                while(file.exists()) {
+                    file.delete();
+                }
             }
             return true;
         }catch (Exception e){
+            System.out.println("fail");
             return false;
         }
     }

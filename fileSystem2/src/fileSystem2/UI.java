@@ -62,7 +62,7 @@ public class UI extends JFrame {
         }else if(file.isDirectory()){
             File[] files = file.listFiles();
             for (File myfile : files) {
-                deleteDirectory(filePath + "/" + myfile.getName());
+                deleteDirectory(filePath + File.separator + myfile.getName());
             }
             file.delete();
         }
@@ -78,6 +78,7 @@ public class UI extends JFrame {
             if (space > 1024){
                 space = 0.0;
             }
+            reader.close();
         } catch (FileNotFoundException E) {} catch (IOException E) {}
         return space;
     }
@@ -89,6 +90,7 @@ public class UI extends JFrame {
         freeField.setText(String.valueOf(1024 - currentBlock.getSpace()) + "KB");
     }
 
+    // Ui
     public UI() throws IOException {
         setTitle("File System Demo");
         setLayout(new BorderLayout());
@@ -99,6 +101,7 @@ public class UI extends JFrame {
         chooser = new JFileChooser(path);
         chooser.setDialogTitle("Choose a dir for this demo");
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setPreferredSize(new Dimension(800, 600));
         int result = chooser.showOpenDialog(this);
         if (result == chooser.APPROVE_OPTION){
             System.out.println(chooser.getSelectedFile().getAbsolutePath());
@@ -120,6 +123,7 @@ public class UI extends JFrame {
         writer.write("Free-Space Management:bitmap\n");
         writer.write("Store-Space Management:FAT\n");
         writer.flush();
+        writer.close();
 
         block1 = new Block(1, new File(rootFile.getPath() + File.separator + "1"));
         blocks.add(block1);
@@ -346,6 +350,8 @@ public class UI extends JFrame {
                 int capacity;
 
                 JOptionPane inputPane = new JOptionPane();
+                inputPane.setPreferredSize(new Dimension(600, 600));
+                inputPane.setFont(new Font("黑体", Font.BOLD, 32));
                 inputPane.setInputValue(JOptionPane.showInputDialog("File name:"));
                 if (inputPane.getInputValue() == null) {
                     return;
