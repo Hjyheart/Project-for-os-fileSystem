@@ -51,6 +51,31 @@ public class UI extends JFrame {
     private JLabel fileNum = new JLabel("Block's File Number:");
     private JLabel fileNumField = new JLabel();
 
+    private static String helpMessage =
+            "<html>" +
+                    "<body>" +
+                    "<h1>文件系统模拟</h1>" +
+                    "<h2>技术细节</h2>" +
+                    "<h3>显式链接(FAT)</h3>" +
+                    "<ul> <li>用一个专用文件记录分配和未分配的内存块</li> <li>使用链接的方式,不存在内存碎片</li> </ul>" +
+                    "<h3>空闲空间管理 —— 位图</h3>" +
+                    "<ul> <li>用二进制0和1分别代表未分配的内存块和已经分配的内存块</li> <li>在该项目中位图和FAT进行了合并</li> </ul>" +
+                    "<h3>目录结构 —— 多级目录结构</h3>" +
+                    "<h3>FCB</h3>" +
+                    "<ul> <li>文件类型</li> <li>文件名</li> <li>文件大小</li> <li>文件最近更新时间</li> </ul>" +
+                    "<h2>操作说明</h2>" +
+                    "<ul> <li>必须先选择一个计算机上的文件夹作为模拟工作目录</li> <li>左侧树状结构即文件目录</li> <li>双击或点击文件夹左侧小图标可以打开文件目录</li> " +
+                    "<li>右侧空白处为表格区域,将现实相关文件信息</li> <li>双击表格中的项可以直接打开相关文件</li>" +
+                    "<li>下方绿色为盘信息面板,将现实相应盘的相应信息</li>" +
+                    "<li>最下方空白处将显示内存块当前状况</li> </ul>" +
+                    "<li>在树状结构中选中某一节点,右键即可选择相应的文件操作</li>" +
+                    "<li>创建新的文件会要求输入文件名和文件大小(KB)</li>" +
+                    "<h2>特别说明</h2>" +
+                    "<ul> <li>本程序重在模拟,并不是真正地为文件开了这么大的空间</li> <li>仅支持生成txt,文本文件中直接现实FCB,不支持修改内容</li> </ul>" +
+                    "<li>对于非法输入都会直接导致文件生成失败</li>" +
+                    "</body>" +
+                    "</html>";
+
     // Delete a dir
     public static void deleteDirectory(String filePath){
         File file = new File(filePath);
@@ -79,7 +104,7 @@ public class UI extends JFrame {
                 space = 0.0;
             }
             reader.close();
-        } catch (FileNotFoundException E) {} catch (IOException E) {}
+        } catch (Exception e){};
         return space;
     }
 
@@ -92,7 +117,7 @@ public class UI extends JFrame {
 
     // Ui
     public UI() throws IOException {
-        setTitle("File System Demo");
+        setTitle("File System Demo by 1452822 洪嘉勇");
         setLayout(new BorderLayout());
 
         // JFileChooser init
@@ -108,6 +133,13 @@ public class UI extends JFrame {
             rootPath = chooser.getSelectedFile().getPath();
         }
 
+        // help init
+        JLabel help = new JLabel(helpMessage);
+        help.setFont(new Font("微软雅黑", Font.BOLD, 32));
+        JOptionPane.showMessageDialog(null,
+                help,
+                "文件系统模拟",
+                JOptionPane.DEFAULT_OPTION);
 
         // Create work space
         rootFile = new File(rootPath + File.separator + "myFileSystem");
@@ -115,8 +147,13 @@ public class UI extends JFrame {
         if (rootFile.exists()){
             deleteDirectory(rootFile.getPath());
         }
-        rootFile.mkdir();
-        readMe.createNewFile();
+        try {
+            rootFile.mkdir();
+            readMe.createNewFile();
+        }catch (Exception e){
+            JOptionPane.showMessageDialog(null, "The place is not support to create dir!", "Error", JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
+        }
         FileWriter writer = new FileWriter(readMe.getPath());
         writer.write("Hello, this my file system!!!\n");
         writer.write("Space: 10 * 1024K = 10M(Block 0 is for FCB)\n");
@@ -194,8 +231,8 @@ public class UI extends JFrame {
 
         // Table init
         fileTable = new JTable(model);
-        fileTable.setFont(new Font("黑体",Font.BOLD,20));
-        fileTable.getTableHeader().setFont(new Font("黑体",Font.BOLD,32));
+        fileTable.setFont(new Font("微软雅黑",Font.BOLD,20));
+        fileTable.getTableHeader().setFont(new Font("微软雅黑",Font.BOLD,32));
         fileTable.setRowHeight(30);
         fileTable.setSelectionBackground(Color.ORANGE);
 
@@ -203,7 +240,7 @@ public class UI extends JFrame {
 
         final DefaultTreeModel treeModel = new DefaultTreeModel(root);
         tree = new JTree(treeModel);
-        tree.setFont(new Font("黑体",Font.BOLD,32));
+        tree.setFont(new Font("微软雅黑",Font.BOLD,32));
         tree.setRowHeight(50);
         tree.setEditable(false);
         tree.putClientProperty("Jtree.lineStyle",  "Horizontal");
@@ -337,7 +374,7 @@ public class UI extends JFrame {
 
         // Create a file and update fileTable to show it
         JMenuItem createFileItem = new JMenuItem("create a file");
-        createFileItem.setFont(new Font("黑体",Font.BOLD,32));
+        createFileItem.setFont(new Font("微软雅黑",Font.BOLD,32));
         createFileItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -351,7 +388,7 @@ public class UI extends JFrame {
 
                 JOptionPane inputPane = new JOptionPane();
                 inputPane.setPreferredSize(new Dimension(600, 600));
-                inputPane.setFont(new Font("黑体", Font.BOLD, 32));
+                inputPane.setFont(new Font("微软雅黑", Font.BOLD, 32));
                 inputPane.setInputValue(JOptionPane.showInputDialog("File name:"));
                 if (inputPane.getInputValue() == null) {
                     return;
@@ -384,7 +421,7 @@ public class UI extends JFrame {
 
         // create a dir and update fileTable to show it
         JMenuItem createDirItem = new JMenuItem("create a dir");
-        createDirItem.setFont(new Font("黑体",Font.BOLD,32));
+        createDirItem.setFont(new Font("微软雅黑",Font.BOLD,32));
         createDirItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -417,7 +454,7 @@ public class UI extends JFrame {
 
         // Delete a file or a dir
         JMenuItem deleteItem = new JMenuItem("delete");
-        deleteItem.setFont(new Font("黑体",Font.BOLD,32));
+        deleteItem.setFont(new Font("微软雅黑",Font.BOLD,32));
         deleteItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -445,7 +482,7 @@ public class UI extends JFrame {
 
         // Format a dir
         JMenuItem formatItem = new JMenuItem("format");
-        formatItem.setFont(new Font("黑体",Font.BOLD,32));
+        formatItem.setFont(new Font("微软雅黑",Font.BOLD,32));
         formatItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -474,7 +511,7 @@ public class UI extends JFrame {
 
         // Rename a dir/file
         JMenuItem renameItem = new JMenuItem("rename");
-        renameItem.setFont(new Font("黑体",Font.BOLD,32));
+        renameItem.setFont(new Font("微软雅黑",Font.BOLD,32));
         renameItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -505,18 +542,30 @@ public class UI extends JFrame {
         panel.setBackground(Color.green);
         panel.setLayout(new FlowLayout(FlowLayout.CENTER));
         JLabel tips = new JLabel("文件操作请选中左侧文件之后右键");
-        tips.setFont(new Font("黑体",Font.BOLD,32));
+        tips.setFont(new Font("微软雅黑",Font.BOLD,32));
         panel.add(tips);
+        blockName.setFont(new Font("微软雅黑", Font.BOLD, 20));
         panel.add(blockName);
+        nameField.setFont(new Font("微软雅黑", Font.ITALIC, 15));
+        nameField.setForeground(Color.RED);
         panel.add(nameField);
         panel.add(new JLabel("  "));
+        haveUsed.setFont(new Font("微软雅黑", Font.BOLD, 20));
         panel.add(haveUsed);
+        usedField.setFont(new Font("微软雅黑", Font.ITALIC, 15));
+        usedField.setForeground(Color.RED);
         panel.add(usedField);
         panel.add(new JLabel("  "));
+        freeYet.setFont(new Font("微软雅黑", Font.BOLD, 20));
         panel.add(freeYet);
+        freeField.setForeground(Color.RED);
+        freeField.setFont(new Font("微软雅黑", Font.ITALIC, 15));
         panel.add(freeField);
         panel.add(new JLabel("  "));
+        fileNum.setFont(new Font("微软雅黑", Font.BOLD, 20));
         panel.add(fileNum);
+        fileNumField.setForeground(Color.RED);
+        fileNumField.setFont(new Font("微软雅黑", Font.ITALIC, 15));
         panel.add(fileNumField);
         add(panel, BorderLayout.SOUTH);
 
