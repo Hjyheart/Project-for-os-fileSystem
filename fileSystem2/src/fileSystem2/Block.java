@@ -19,56 +19,86 @@ public class Block {
     private FileWriter bitWriter;
     private FileWriter recoverWriter;
     private int fileNum;
-    private int space;
+    private double space;
     public int [][] bitmap = new int[32][32];
     private Map<String, int[][] > filesBit = new HashMap<String, int[][]>();
     private ArrayList<File> files = new ArrayList<File>();
 
-    public Block(int name, File file) throws IOException {
-        space = 0;
-        fileNum = 0;
+    public Block(int name, File file, boolean rec) throws IOException {
         blockName = name;
         blockFile = file;
-        blockFile.mkdir();
         blockBitMap = new File(blockFile.getPath() + File.separator + blockName + "BitMap&&Fat.txt");
-        blockBitMap.createNewFile();
-        bitWriter = new FileWriter(blockBitMap);
-        for (int i = 0; i < 32; i++){
-            for (int k = 0; k < 32; k++){
-                bitmap[i][k] = 0;
-                bitWriter.write("0");
-            }
-            bitWriter.write("\n");
-        }
-        bitWriter.flush();
-
         recover = new File(blockFile.getPath() + File.separator + "recover.txt");
-        recover.createNewFile();
-        recoverWriter = new FileWriter(recover);
-        recoverWriter.write(String.valueOf(space) + "\n");
-        recoverWriter.write(String.valueOf(fileNum) + "\n");
-        for (int i = 0; i < 32; i++){
-            for (int k = 0; k < 32; k++){
-                if (bitmap[i][k] == 0){
-                    recoverWriter.write("0\n");
-                }else{
-                    recoverWriter.write("1\n");
+        if (!rec) {
+            space = 0;
+            fileNum = 0;
+            blockFile.mkdir();
+            blockBitMap.createNewFile();
+            bitWriter = new FileWriter(blockBitMap);
+            for (int i = 0; i < 32; i++) {
+                for (int k = 0; k < 32; k++) {
+                    bitmap[i][k] = 0;
+                    bitWriter.write("0");
+                }
+                bitWriter.write("\n");
+            }
+            bitWriter.flush();
+
+            recover.createNewFile();
+            recoverWriter = new FileWriter(recover);
+            recoverWriter.write(String.valueOf(space) + "\n");
+            recoverWriter.write(String.valueOf(fileNum) + "\n");
+            for (int i = 0; i < 32; i++) {
+                for (int k = 0; k < 32; k++) {
+                    if (bitmap[i][k] == 0) {
+                        recoverWriter.write("0\n");
+                    } else {
+                        recoverWriter.write("1\n");
+                    }
                 }
             }
+            recoverWriter.flush();
+        }else{
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader(recover));
+                space = Double.parseDouble(reader.readLine());
+                fileNum = Integer.parseInt(reader.readLine());
+                for (int i = 0; i < 32; i++) {
+                    for (int k = 0; k < 32; k++) {
+                        if (Integer.parseInt(reader.readLine()) == 0) {
+                            bitmap[i][k] = 0;
+                        } else {
+                            bitmap[i][k] = 1;
+                        }
+                    }
+                }
+                String temp;
+                while ((temp = reader.readLine()) != null) {
+                    File myFile = new File(blockFile.getPath() + File.separator + temp);
+                    files.add(myFile);
+                    int[][] tempBit = new int[32][32];
+                    for (int i = 0; i < 32; i++) {
+                        for (int k = 0; k < 32; k++) {
+                            if (Integer.parseInt(reader.readLine()) == 0) {
+                                tempBit[i][k] = 0;
+                            } else {
+                                tempBit[i][k] = 1;
+                            }
+                        }
+                    }
+                    filesBit.put(myFile.getName(), tempBit);
+                }
+                reader.close();
+            }catch (Exception e){
+                JOptionPane.showMessageDialog(null, "The files aren't compelete. You can choose another place or delete \"myFileSystem\" in this dir and run this again!",
+                "Error", JOptionPane.ERROR_MESSAGE);
+                System.exit(0);
+            }
         }
-        recoverWriter.flush();
     }
 
     public File getBlockFile(){
         return blockFile;
-    }
-
-    public FileWriter getBitWriter() {
-        return bitWriter;
-    }
-
-    public File getBlockBitMap() {
-        return blockBitMap;
     }
 
     public void rewriteBitMap() throws IOException {
@@ -194,7 +224,8 @@ public class Block {
                 || file.getName().equals("4BitMap&&Fat.txt") || file.getName().equals("5BitMap&&Fat.txt")
                 || file.getName().equals("5BitMap&&Fat.txt") || file.getName().equals("6BitMap&&Fat.txt")
                 || file.getName().equals("7BitMap&&Fat.txt") || file.getName().equals("8BitMap&&Fat.txt")
-                || file.getName().equals("9BitMap&&Fat.txt") || file.getName().equals("10BitMap&&Fat.txt")){
+                || file.getName().equals("9BitMap&&Fat.txt") || file.getName().equals("10BitMap&&Fat.txt")
+                || file.getName().equals("recover.txt")){
             JOptionPane.showMessageDialog(null, "The dir is protected!!", "Access fail", JOptionPane.ERROR_MESSAGE);
             return false;
         }
@@ -276,7 +307,7 @@ public class Block {
         return fileNum;
     }
 
-    public int getSpace() {
+    public double getSpace() {
         return space;
     }
 }

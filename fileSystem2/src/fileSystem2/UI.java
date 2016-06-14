@@ -73,8 +73,8 @@ public class UI extends JFrame {
                     "<li>在树状结构中选中某一节点,右键即可选择相应的文件操作</li>" +
                     "<li>创建新的文件会要求输入文件名和文件大小(KB)</li>" +
                     "<h2>特别说明</h2>" +
-                    "<ul> <li>本程序重在模拟,并不是真正地为文件开了这么大的空间</li> <li>仅支持生成txt,文本文件中直接现实FCB,不支持修改内容</li> </ul>" +
-                    "<li>对于非法输入都会直接导致文件生成失败</li>" +
+                    "<ul> <li>本程序重在模拟,并不是真正地为文件开了这么大的空间</li> <li>仅支持生成txt,文本文件中直接现实FCB,不支持修改内容</li>" +
+                    "<li>对于非法输入都会直接导致文件生成失败</li> <li>如果存档文件recover.txt被破坏,将无法打开文件</li></ul>" +
                     "</body>" +
                     "</html>";
 
@@ -174,47 +174,49 @@ public class UI extends JFrame {
         // Create work space
         rootFile = new File(rootPath + File.separator + "myFileSystem");
         readMe = new File(rootPath + File.separator + "myFileSystem" + File.separator + "ReadMe.txt");
-        if (rootFile.exists()){
-            deleteDirectory(rootFile.getPath());
-        }
-        try {
-            rootFile.mkdir();
-            readMe.createNewFile();
-        }catch (Exception e){
-            JOptionPane.showMessageDialog(null, "The place is not support to create dir!", "Error", JOptionPane.ERROR_MESSAGE);
-            System.exit(0);
-        }
-        FileWriter writer = new FileWriter(readMe.getPath());
-        writer.write("Hello, this my file system!!!\n");
-        writer.write("Space: 10 * 1024K = 10M(Block 0 is for FCB)\n");
-        writer.write("Free-Space Management:bitmap\n");
-        writer.write("Store-Space Management:FAT\n");
-        writer.flush();
-        writer.close();
 
-        block1 = new Block(1, new File(rootFile.getPath() + File.separator + "1"));
-        blocks.add(block1);
-        block2 = new Block(2, new File(rootFile.getPath() + File.separator + "2"));
-        blocks.add(block2);
-        block3 = new Block(3, new File(rootFile.getPath() + File.separator + "3"));
-        blocks.add(block3);
-        block4 = new Block(4, new File(rootFile.getPath() + File.separator + "4"));
-        blocks.add(block4);
-        block5 = new Block(5, new File(rootFile.getPath() + File.separator + "5"));
-        blocks.add(block5);
-        block6 = new Block(6, new File(rootFile.getPath() + File.separator + "6"));
-        blocks.add(block6);
-        block7 = new Block(7, new File(rootFile.getPath() + File.separator + "7"));
-        blocks.add(block7);
-        block8 = new Block(8, new File(rootFile.getPath() + File.separator + "8"));
-        blocks.add(block8);
-        block9 = new Block(9, new File(rootFile.getPath() + File.separator + "9"));
-        blocks.add(block9);
-        block10 = new Block(10, new File(rootFile.getPath() + File.separator + "10"));
-        blocks.add(block10);
+        boolean flag = true;
 
         // JTree init
         final DefaultMutableTreeNode root = new DefaultMutableTreeNode(new myFiles(rootFile, 0, 10240));
+        if (!rootFile.exists()) {
+            flag = false;
+            try {
+                rootFile.mkdir();
+                readMe.createNewFile();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "The place is not support to create dir!", "Error", JOptionPane.ERROR_MESSAGE);
+                System.exit(0);
+            }
+            FileWriter writer = new FileWriter(readMe.getPath());
+            writer.write("Hello, this my file system!!!\n");
+            writer.write("Space: 10 * 1024K = 10M\n");
+            writer.write("Free-Space Management:bitmap\n");
+            writer.write("Store-Space Management:FAT\n");
+            writer.flush();
+            writer.close();
+        }
+
+        block1 = new Block(1, new File(rootFile.getPath() + File.separator + "1"), flag);
+        blocks.add(block1);
+        block2 = new Block(2, new File(rootFile.getPath() + File.separator + "2"), flag);
+        blocks.add(block2);
+        block3 = new Block(3, new File(rootFile.getPath() + File.separator + "3"), flag);
+        blocks.add(block3);
+        block4 = new Block(4, new File(rootFile.getPath() + File.separator + "4"), flag);
+        blocks.add(block4);
+        block5 = new Block(5, new File(rootFile.getPath() + File.separator + "5"), flag);
+        blocks.add(block5);
+        block6 = new Block(6, new File(rootFile.getPath() + File.separator + "6"), flag);
+        blocks.add(block6);
+        block7 = new Block(7, new File(rootFile.getPath() + File.separator + "7"), flag);
+        blocks.add(block7);
+        block8 = new Block(8, new File(rootFile.getPath() + File.separator + "8"), flag);
+        blocks.add(block8);
+        block9 = new Block(9, new File(rootFile.getPath() + File.separator + "9"), flag);
+        blocks.add(block9);
+        block10 = new Block(10, new File(rootFile.getPath() + File.separator + "10"), flag);
+        blocks.add(block10);
 
         root.add(new DefaultMutableTreeNode(new myFiles(block1.getBlockFile(), 1, 1024.0)));
         model.addRow(new myFiles(block1.getBlockFile(), 1, 1024.0));
@@ -295,7 +297,6 @@ public class UI extends JFrame {
                     parent = (DefaultMutableTreeNode) (parentPath.getLastPathComponent());
                 }
 
-                myFiles myFile = (myFiles)parent.getUserObject();
                 nameField.setText(String.valueOf(blokName));
                 upDateBlock(currentBlock);
 
@@ -414,7 +415,7 @@ public class UI extends JFrame {
                 Block currentBlock = blocks.get(blokName - 1);
 
                 String inputValue;
-                int capacity;
+                double capacity;
 
                 JOptionPane inputPane = new JOptionPane();
                 inputPane.setPreferredSize(new Dimension(600, 600));
@@ -428,7 +429,7 @@ public class UI extends JFrame {
                 if (inputPane.getInputValue() == null) {
                     return;
                 }
-                capacity = Integer.parseInt(inputPane.getInputValue().toString());
+                capacity = Double.parseDouble(inputPane.getInputValue().toString());
 
                 File newFile = new File(temp.getFilePath() + File.separator + inputValue + ".txt");
                 if (!newFile.exists() && !inputValue.equals(null)){
