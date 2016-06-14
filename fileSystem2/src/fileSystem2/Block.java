@@ -15,7 +15,9 @@ public class Block {
     private int blockName;
     private File blockFile;
     private File blockBitMap;
+    private File recover;
     private FileWriter bitWriter;
+    private FileWriter recoverWriter;
     private int fileNum;
     private int space;
     public int [][] bitmap = new int[32][32];
@@ -30,7 +32,7 @@ public class Block {
         blockFile.mkdir();
         blockBitMap = new File(blockFile.getPath() + File.separator + blockName + "BitMap&&Fat.txt");
         blockBitMap.createNewFile();
-        bitWriter = new FileWriter(blockBitMap.getPath());
+        bitWriter = new FileWriter(blockBitMap);
         for (int i = 0; i < 32; i++){
             for (int k = 0; k < 32; k++){
                 bitmap[i][k] = 0;
@@ -39,6 +41,22 @@ public class Block {
             bitWriter.write("\n");
         }
         bitWriter.flush();
+
+        recover = new File(blockFile.getPath() + File.separator + "recover.txt");
+        recover.createNewFile();
+        recoverWriter = new FileWriter(recover);
+        recoverWriter.write(String.valueOf(space) + "\n");
+        recoverWriter.write(String.valueOf(fileNum) + "\n");
+        for (int i = 0; i < 32; i++){
+            for (int k = 0; k < 32; k++){
+                if (bitmap[i][k] == 0){
+                    recoverWriter.write("0\n");
+                }else{
+                    recoverWriter.write("1\n");
+                }
+            }
+        }
+        recoverWriter.flush();
     }
 
     public File getBlockFile(){
@@ -54,7 +72,7 @@ public class Block {
     }
 
     public void rewriteBitMap() throws IOException {
-        bitWriter = new FileWriter(blockBitMap.getPath());
+        bitWriter = new FileWriter(blockBitMap);
         bitWriter.write("");
         for (int i = 0; i < 32;i++){
             for (int k = 0; k < 32; k++){
@@ -82,6 +100,37 @@ public class Block {
             bitWriter.write("\n");
         }
         bitWriter.flush();
+    }
+
+    public void rewriteRecoverWriter() throws IOException{
+        recoverWriter = new FileWriter(recover);
+        recoverWriter.write("");
+
+        recoverWriter.write(String.valueOf(space) + "\n");
+        recoverWriter.write(String.valueOf(fileNum) + "\n");
+        for (int i = 0; i < 32; i++){
+            for (int k = 0; k < 32; k++){
+                if (bitmap[i][k] == 0){
+                    recoverWriter.write("0\n");
+                }else{
+                    recoverWriter.write("1\n");
+                }
+            }
+        }
+        for (int i = 0; i < files.size(); i++){
+            recoverWriter.write(files.get(i).getName() + "\n");
+            int [][] bitTemp = filesBit.get(files.get(i).getName());
+            for (int k = 0; k < 32; k++){
+                for (int j = 0; j < 32; j++){
+                    if (bitTemp[k][j] == 0){
+                        recoverWriter.write("0\n");
+                    }else {
+                        recoverWriter.write("1\n");
+                    }
+                }
+            }
+        }
+        recoverWriter.flush();
     }
 
     public boolean createFile(File file, double capacity) throws IOException {
@@ -123,6 +172,7 @@ public class Block {
             space += capacity;
             filesBit.put(file.getName(), cap);
             rewriteBitMap();
+            rewriteRecoverWriter();
             // Put FCB
             newFileWriter.write("File\n");
             newFileWriter.write(String.valueOf(capacity) + "\n");
@@ -151,10 +201,6 @@ public class Block {
 
         try{
             if (file.isFile()){
-//                while(file.exists()) {
-//                    boolean result = file.delete();
-//                    System.out.println(result);
-//                }
                 try {
                     file.delete();
                 }catch (Exception e){
@@ -197,7 +243,7 @@ public class Block {
         String oldName = file.getName();
         int[][] tempBit = filesBit.get(oldName);
         String c = file.getParent();
-        File mm = new File(c + File.separator + name);
+        File mm = new File(c + File.separator + name + ".txt");
         if (file.renameTo(mm)){
             file = mm;
             filesBit.remove(oldName);
@@ -219,6 +265,7 @@ public class Block {
                 }
             }
             rewriteBitMap();
+            rewriteRecoverWriter();
             return true;
         }else{
             return false;

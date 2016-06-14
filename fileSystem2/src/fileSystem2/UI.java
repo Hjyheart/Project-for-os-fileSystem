@@ -51,6 +51,8 @@ public class UI extends JFrame {
     private JLabel fileNum = new JLabel("Block's File Number:");
     private JLabel fileNumField = new JLabel();
 
+    private JTextField searchLine = new JTextField();
+
     private static String helpMessage =
             "<html>" +
                     "<body>" +
@@ -114,6 +116,34 @@ public class UI extends JFrame {
         usedField.setText(String.valueOf(currentBlock.getSpace()) + " KB");
         freeField.setText(String.valueOf(1024 - currentBlock.getSpace()) + "KB");
     }
+
+    // Search a file
+    public boolean searchFile(String fileName, File parent){
+        File [] files = parent.listFiles();
+        for (File myFile:files){
+            if (myFile.getName().equals(fileName)){
+                try {
+                    if(Desktop.isDesktopSupported()) {
+                        Desktop desktop = Desktop.getDesktop();
+                        desktop.open(myFile);
+                        return true;
+                    }
+                } catch (IOException e1) {
+                    JOptionPane.showMessageDialog(null, myFile.getPath() + " Sorry, some thing wrong!", "Fail to open",
+                            JOptionPane.ERROR_MESSAGE);
+                    return true;
+                }
+            }
+            if (myFile.isDirectory() && myFile.canRead()){
+                if(searchFile(fileName, myFile)){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
 
     // Ui
     public UI() throws IOException {
@@ -467,6 +497,7 @@ public class UI extends JFrame {
                     if (currentBlock.deleteFile(temp.getMyFile(), temp.getSpace())){
                         try {
                             currentBlock.rewriteBitMap();
+                            currentBlock.rewriteRecoverWriter();
                         } catch (IOException e1) {
                             e1.printStackTrace();
                         }
@@ -568,6 +599,29 @@ public class UI extends JFrame {
         fileNumField.setFont(new Font("微软雅黑", Font.ITALIC, 15));
         panel.add(fileNumField);
         add(panel, BorderLayout.SOUTH);
+
+
+        // SeachLine init
+        JPanel searchPane = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        final JLabel searchLabel = new JLabel("Search(eg. File:hehe.txt Dir:hehe): ");
+        searchLabel.setFont(new Font("微软雅黑", Font.BOLD, 25));
+        searchPane.add(searchLabel);
+        searchLine.setPreferredSize(new Dimension(500, 50));
+        searchPane.add(searchLine);
+        JButton searchButton = new JButton("start");
+        searchButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String fileName = searchLine.getText();
+                if(!searchFile(fileName, rootFile)){
+                    JOptionPane.showMessageDialog(null, "Can not find this file!", "Fail!", JOptionPane.WARNING_MESSAGE);
+                }
+                searchLine.setText("");
+            }
+        });
+        searchButton.setFont(new Font("微软雅黑", Font.BOLD, 25));
+        searchPane.add(searchButton);
+        add(searchPane, BorderLayout.NORTH);
 
         // Listen to the tree
         tree.addMouseListener(new MouseAdapter() {
