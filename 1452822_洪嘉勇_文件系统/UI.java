@@ -149,6 +149,7 @@ public class UI extends JFrame {
     public UI() throws IOException {
         setTitle("File System Demo by 1452822 洪嘉勇");
         setLayout(new BorderLayout());
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // JFileChooser init
         String path = File.listRoots()[0].getPath();
@@ -165,9 +166,11 @@ public class UI extends JFrame {
 
         // help init
         JLabel help = new JLabel(helpMessage);
-        help.setFont(new Font("微软雅黑", Font.BOLD, 32));
+        help.setFont(new Font("微软雅黑", Font.CENTER_BASELINE, 20));
+        JScrollPane helpPane = new JScrollPane(help);
+        helpPane.setPreferredSize(new Dimension(500, 600));
         JOptionPane.showMessageDialog(null,
-                help,
+                helpPane,
                 "文件系统模拟",
                 JOptionPane.DEFAULT_OPTION);
 
@@ -263,17 +266,13 @@ public class UI extends JFrame {
 
         // Table init
         fileTable = new JTable(model);
-        fileTable.setFont(new Font("微软雅黑",Font.BOLD,20));
-        fileTable.getTableHeader().setFont(new Font("微软雅黑",Font.BOLD,32));
-        fileTable.setRowHeight(30);
+        fileTable.getTableHeader().setFont(new Font(Font.DIALOG,Font.CENTER_BASELINE,24));
         fileTable.setSelectionBackground(Color.ORANGE);
 
         fileTable.updateUI();
 
         final DefaultTreeModel treeModel = new DefaultTreeModel(root);
         tree = new JTree(treeModel);
-        tree.setFont(new Font("微软雅黑",Font.BOLD,32));
-        tree.setRowHeight(50);
         tree.setEditable(false);
         tree.putClientProperty("Jtree.lineStyle",  "Horizontal");
         tree.getSelectionModel().setSelectionMode
@@ -369,7 +368,7 @@ public class UI extends JFrame {
             }
         });
         treePane = new JScrollPane(tree);
-        treePane.setPreferredSize(new Dimension(350, 400));
+        treePane.setPreferredSize(new Dimension(150, 400));
         add(treePane, BorderLayout.WEST);
 
         tablePane = new JScrollPane(fileTable);
@@ -405,7 +404,6 @@ public class UI extends JFrame {
 
         // Create a file and update fileTable to show it
         JMenuItem createFileItem = new JMenuItem("create a file");
-        createFileItem.setFont(new Font("微软雅黑",Font.BOLD,32));
         createFileItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -419,7 +417,6 @@ public class UI extends JFrame {
 
                 JOptionPane inputPane = new JOptionPane();
                 inputPane.setPreferredSize(new Dimension(600, 600));
-                inputPane.setFont(new Font("微软雅黑", Font.BOLD, 32));
                 inputPane.setInputValue(JOptionPane.showInputDialog("File name:"));
                 if (inputPane.getInputValue() == null) {
                     return;
@@ -452,7 +449,6 @@ public class UI extends JFrame {
 
         // create a dir and update fileTable to show it
         JMenuItem createDirItem = new JMenuItem("create a dir");
-        createDirItem.setFont(new Font("微软雅黑",Font.BOLD,32));
         createDirItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -485,7 +481,6 @@ public class UI extends JFrame {
 
         // Delete a file or a dir
         JMenuItem deleteItem = new JMenuItem("delete");
-        deleteItem.setFont(new Font("微软雅黑",Font.BOLD,32));
         deleteItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -514,7 +509,6 @@ public class UI extends JFrame {
 
         // Format a dir
         JMenuItem formatItem = new JMenuItem("format");
-        formatItem.setFont(new Font("微软雅黑",Font.BOLD,32));
         formatItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -543,7 +537,7 @@ public class UI extends JFrame {
 
         // Rename a dir/file
         JMenuItem renameItem = new JMenuItem("rename");
-        renameItem.setFont(new Font("微软雅黑",Font.BOLD,32));
+//        renameItem.setFont(new Font("微软雅黑",Font.CENTER_BASELINE,24));
         renameItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -573,31 +567,22 @@ public class UI extends JFrame {
         JPanel panel = new JPanel();
         panel.setBackground(Color.green);
         panel.setLayout(new FlowLayout(FlowLayout.CENTER));
-        JLabel tips = new JLabel("文件操作请选中左侧文件之后右键");
-        tips.setFont(new Font("微软雅黑",Font.BOLD,32));
+        JLabel tips = new JLabel("文件操作:选中左侧文件之后右键 打开文件:双击右侧表格内文件");
         panel.add(tips);
-        blockName.setFont(new Font("微软雅黑", Font.BOLD, 20));
         panel.add(blockName);
-        nameField.setFont(new Font("微软雅黑", Font.ITALIC, 15));
         nameField.setForeground(Color.RED);
         panel.add(nameField);
         panel.add(new JLabel("  "));
-        haveUsed.setFont(new Font("微软雅黑", Font.BOLD, 20));
         panel.add(haveUsed);
-        usedField.setFont(new Font("微软雅黑", Font.ITALIC, 15));
         usedField.setForeground(Color.RED);
         panel.add(usedField);
         panel.add(new JLabel("  "));
-        freeYet.setFont(new Font("微软雅黑", Font.BOLD, 20));
         panel.add(freeYet);
         freeField.setForeground(Color.RED);
-        freeField.setFont(new Font("微软雅黑", Font.ITALIC, 15));
         panel.add(freeField);
         panel.add(new JLabel("  "));
-        fileNum.setFont(new Font("微软雅黑", Font.BOLD, 20));
         panel.add(fileNum);
         fileNumField.setForeground(Color.RED);
-        fileNumField.setFont(new Font("微软雅黑", Font.ITALIC, 15));
         panel.add(fileNumField);
         add(panel, BorderLayout.SOUTH);
 
@@ -605,7 +590,6 @@ public class UI extends JFrame {
         // SeachLine init
         JPanel searchPane = new JPanel(new FlowLayout(FlowLayout.LEFT));
         final JLabel searchLabel = new JLabel("Search(eg. File:hehe.txt Dir:hehe): ");
-        searchLabel.setFont(new Font("微软雅黑", Font.BOLD, 25));
         searchPane.add(searchLabel);
         searchLine.setPreferredSize(new Dimension(500, 50));
         searchPane.add(searchLine);
@@ -620,7 +604,6 @@ public class UI extends JFrame {
                 searchLine.setText("");
             }
         });
-        searchButton.setFont(new Font("微软雅黑", Font.BOLD, 25));
         searchPane.add(searchButton);
         add(searchPane, BorderLayout.NORTH);
 
@@ -636,7 +619,7 @@ public class UI extends JFrame {
             }
         });
 
-        setSize(1600, 1200);
+        setSize(1200, 600);
         setVisible(true);
     }
 

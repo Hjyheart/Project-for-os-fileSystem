@@ -40,20 +40,20 @@ public class Block {
                     bitmap[i][k] = 0;
                     bitWriter.write("0");
                 }
-                bitWriter.write("\n");
+                bitWriter.write("\r\n");
             }
             bitWriter.flush();
 
             recover.createNewFile();
             recoverWriter = new FileWriter(recover);
-            recoverWriter.write(String.valueOf(space) + "\n");
-            recoverWriter.write(String.valueOf(fileNum) + "\n");
+            recoverWriter.write(String.valueOf(space) + "\r\n");
+            recoverWriter.write(String.valueOf(fileNum) + "\r\n");
             for (int i = 0; i < 32; i++) {
                 for (int k = 0; k < 32; k++) {
                     if (bitmap[i][k] == 0) {
-                        recoverWriter.write("0\n");
+                        recoverWriter.write("0\r\n");
                     } else {
-                        recoverWriter.write("1\n");
+                        recoverWriter.write("1\r\n");
                     }
                 }
             }
@@ -101,6 +101,19 @@ public class Block {
         return blockFile;
     }
 
+    public void putFCB(File file, double capacity) throws IOException {
+        FileWriter newFileWriter = new FileWriter(file);
+        newFileWriter.write("File\r\n");
+        newFileWriter.write(String.valueOf(capacity) + "\r\n");
+        newFileWriter.write("Name: " + file.getName() + "\r\n");
+        newFileWriter.write("Path: " + file.getPath() + "\r\n");
+        String ctime = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date(file.lastModified()));
+        newFileWriter.write("Date last updated: " + ctime + "\r\n");
+        newFileWriter.write("--------------------------edit file blew ------------------------------\r\n");
+        newFileWriter.close();
+    }
+
+
     public void rewriteBitMap() throws IOException {
         bitWriter = new FileWriter(blockBitMap);
         bitWriter.write("");
@@ -112,7 +125,7 @@ public class Block {
                     bitWriter.write("1");
                 }
             }
-            bitWriter.write("\n");
+            bitWriter.write("\r\n");
         }
         for (int i = 0; i < files.size(); i++){
             bitWriter.write(files.get(i).getName() + ":");
@@ -127,7 +140,7 @@ public class Block {
                     }
                 }
             }
-            bitWriter.write("\n");
+            bitWriter.write("\r\n");
         }
         bitWriter.flush();
     }
@@ -136,26 +149,26 @@ public class Block {
         recoverWriter = new FileWriter(recover);
         recoverWriter.write("");
 
-        recoverWriter.write(String.valueOf(space) + "\n");
-        recoverWriter.write(String.valueOf(fileNum) + "\n");
+        recoverWriter.write(String.valueOf(space) + "\r\n");
+        recoverWriter.write(String.valueOf(fileNum) + "\r\n");
         for (int i = 0; i < 32; i++){
             for (int k = 0; k < 32; k++){
                 if (bitmap[i][k] == 0){
-                    recoverWriter.write("0\n");
+                    recoverWriter.write("0\r\n");
                 }else{
-                    recoverWriter.write("1\n");
+                    recoverWriter.write("1\r\n");
                 }
             }
         }
         for (int i = 0; i < files.size(); i++){
-            recoverWriter.write(files.get(i).getName() + "\n");
+            recoverWriter.write(files.get(i).getName() + "\r\n");
             int [][] bitTemp = filesBit.get(files.get(i).getName());
             for (int k = 0; k < 32; k++){
                 for (int j = 0; j < 32; j++){
                     if (bitTemp[k][j] == 0){
-                        recoverWriter.write("0\n");
+                        recoverWriter.write("0\r\n");
                     }else {
-                        recoverWriter.write("1\n");
+                        recoverWriter.write("1\r\n");
                     }
                 }
             }
@@ -166,7 +179,6 @@ public class Block {
     public boolean createFile(File file, double capacity) throws IOException {
         files.add(file);
         file.createNewFile();
-        FileWriter newFileWriter = new FileWriter(file);
         int cap[][] = new int[32][32];
         for (int i = 0; i < 32; i++){
             for (int k = 0; k < 32; k++)
@@ -204,13 +216,7 @@ public class Block {
             rewriteBitMap();
             rewriteRecoverWriter();
             // Put FCB
-            newFileWriter.write("File\n");
-            newFileWriter.write(String.valueOf(capacity) + "\n");
-            newFileWriter.write("Name: " + file.getName() + "\n");
-            newFileWriter.write("Path: " + file.getPath() + "\n");
-            String ctime = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date(file.lastModified()));
-            newFileWriter.write("Date last updated: " + ctime + "\n");
-            newFileWriter.close();
+            putFCB(file, capacity);
 
             return true;
         }
@@ -274,32 +280,33 @@ public class Block {
         String oldName = file.getName();
         int[][] tempBit = filesBit.get(oldName);
         String c = file.getParent();
-        File mm = new File(c + File.separator + name + ".txt");
-        if (file.renameTo(mm)){
-            file = mm;
-            filesBit.remove(oldName);
-            filesBit.put(file.getName(), tempBit);
-            // Put FCB
-            FileWriter newFileWriter = new FileWriter(file);
-            newFileWriter.write("File\n");
-            newFileWriter.write(String.valueOf(capacity) + "\n");
-            newFileWriter.write("Name: " + file.getName() + "\n");
-            newFileWriter.write("Path: " + file.getPath() + "\n");
-            String ctime = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date(file.lastModified()));
-            newFileWriter.write("Date last updated: " + ctime + "\n");
-            newFileWriter.close();
-            for (int i = 0; i < files.size(); i++){
-                if (files.get(i).getName().equals(oldName)){
-                    files.remove(i);
-                    files.add(file);
-                    break;
+        File mm;
+        if(file.isFile()) {
+            mm = new File(c + File.separator + name + ".txt");
+            if (file.renameTo(mm)){
+                file = mm;
+                filesBit.remove(oldName);
+                filesBit.put(file.getName(), tempBit);
+                // Put FCB
+                putFCB(file, capacity);
+                for (int i = 0; i < files.size(); i++){
+                    if (files.get(i).getName().equals(oldName)){
+                        files.remove(i);
+                        files.add(file);
+                        break;
+                    }
                 }
+                rewriteBitMap();
+                rewriteRecoverWriter();
+                return true;
+            }else{
+                return false;
             }
-            rewriteBitMap();
-            rewriteRecoverWriter();
+        }
+        else {
+            mm = new File(c + File.separator + name);
+            file.renameTo(mm);
             return true;
-        }else{
-            return false;
         }
     }
 
