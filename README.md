@@ -91,7 +91,6 @@
 - 地址
 - 最近更新时间
 
-![创建文件](file:///Users/hongjiayong/Desktop/fileSystemPic/createFileopen.png)
 ## 程序操作指南
 ### 特殊文件说明
 #### BitMap&&Fat.txt
@@ -101,7 +100,6 @@
     该文件是当前盘区的备份文档，在再次启动该应用程序的时候通过读取该文件的信息还原出上次的
     运行状态，从而实现复盘
 ### 程序概述
-![界面](file:///Users/hongjiayong/Desktop/fileSystemPic/fileSystem.png)
 #### 界面构成
 - 搜索框
 - 文件树
@@ -109,7 +107,6 @@
 - 底部盘信息栏
 ##### 搜索框
     搜索框位于顶部可以在搜索栏中键入文件名或者文件夹名然后点击“start”来进行检索，如果检索成功将直接打开，失败则弹框提醒
-![搜索](file:///Users/hongjiayong/Desktop/fileSystemPic/search.png)
 ###### 算法
 采用dfs深度搜索的方式
 ``` java
@@ -144,16 +141,15 @@
     文件树位于左侧，呈现文件的目录结构，详情见目录结构
 ##### 显示框
     显示框位于程序右侧，用于显示文件的名称、路径、类型、大小和最近修改时间
-![显示框](file:///Users/hongjiayong/Desktop/fileSystemPic/fileTable.png)
 ##### 底部盘信息栏
     底部盘信息栏位于程序的底部，用于显示当前选中盘区的名称、已使用空间、未使用空间、文件数量
-![底部信息栏](file:///Users/hongjiayong/Desktop/fileSystemPic/bottomInformation.png)
 #### 菜单项
 - create a file(生成一个文件）
 - create a dir(生成一个文件夹)
 - delete(删除一个文件或文件夹)
 - format(格式化)
 - rename(重命名)
+
 ### 注意事项
 - 必须先选择一个系统内的文件夹作为模拟工作目录
 - 文件操作需要先选中一个文件树中的节点右键才能进行操作
@@ -163,12 +159,12 @@
 - 文本中将自动生成FCB，不支持用户去修改FCB
 - 非法输入都将导致文件生成失败
 - 如果存档文件recover.txt被破坏，将无法在再次打开该程序时恢复盘区信息
+
 ## 文件系统实现功能
 ### 文件目录
     文件目录将呈现在程序的左侧，以十个以数字命名的盘为基目录。
     点击文件夹左侧箭头可以将文件夹展开
 **当执行创建和删除文件等操作，必须重新展开一次父目录才能刷新**<br><br>
-![文件目录](file:///Users/hongjiayong/Desktop/fileSystemPic/wenjianmulu.png)
 ### 创建文件
 #### 概述
     选中某一文件后，右键展开功能选项，选择第一项生成文件或第二项就会弹出对话框
@@ -196,11 +192,7 @@
     }
 ```
 **当执行创建文件操作，必须重新展开一次父目录才能刷新**<br><br>
-![创建文件](file:///Users/hongjiayong/Desktop/fileSystemPic/createFile.png)
-![创建文件](file:///Users/hongjiayong/Desktop/fileSystemPic/createFileNameDialog.png)
-![创建文件](file:///Users/hongjiayong/Desktop/fileSystemPic/createFileLargeDialog.png)
-![创建文件](file:///Users/hongjiayong/Desktop/fileSystemPic/createFileSuccess.png)
-![创建文件](file:///Users/hongjiayong/Desktop/fileSystemPic/createFileopen.png)
+
 ### 删除文件
 #### 概述
     选中某一文件后，右键展开功能选项，选择第三项删除即可删除所选项
@@ -222,8 +214,7 @@
 ```
 
 **当执行删除文件操作，必须重新展开一次父目录才能刷新**<br><br>
-![删除文件](file:///Users/hongjiayong/Desktop/fileSystemPic/deleteFile.png)
-![删除文件](file:///Users/hongjiayong/Desktop/fileSystemPic/deleteFileSure.png)
+
 ### 重命名（更改当前目录）
 #### 概述
     选中某一文件后，右键展开功能选项，选择第四项重命名即可对文件或文件夹进行重命名
@@ -231,8 +222,7 @@
     通过调用File类的renameTo()方法进行重命名
     如果相同目录下有相同的文件，则重命名将失败
 **当执行重命名文件操作，必须重新展开一次父目录才能刷新**<br><br>
-![重命名](file:///Users/hongjiayong/Desktop/fileSystemPic/renameFile.png)
-![重命名](file:///Users/hongjiayong/Desktop/fileSystemPic/renamaFileDialog.png)
+
 ### 打开文件
     双击程序中右侧的显示面板中的文件即可打开对应文件
 ### 关闭文件
@@ -246,8 +236,7 @@
     选中某一文件夹之后右键选择第四项格式化就可以将该文件夹格式化
 #### 实现方法
     即递归删除该目录下的所有文件并更新FAT和位图
-<!-- **当执行重命名文件操作，必须重新展开一次父目录才能刷新**<br><br> -->
-![格式化](file:///Users/hongjiayong/Desktop/fileSystemPic/format.png)
+
 ## 数据结构
 ### 盘区（Block）
 ``` java
